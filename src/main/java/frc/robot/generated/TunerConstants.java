@@ -41,7 +41,7 @@ public class TunerConstants {
 	private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.Voltage;
 	
 	// The type of motor used for the drive motor
-	private static final DriveMotorArrangement kDriveMotorType = 4.TalonFX_Integrated;
+	private static final DriveMotorArrangement kDriveMotorType = DriveMotorArrangement.TalonFX_Integrated;
 	// The type of motor used for the drive motor
 	private static final SteerMotorArrangement kSteerMotorType = SteerMotorArrangement.TalonFX_Integrated;
 	
