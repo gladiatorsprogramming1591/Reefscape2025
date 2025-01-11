@@ -34,7 +34,17 @@ public class RobotContainer {
 	
 	private final Telemetry logger = new Telemetry(MaxSpeed);
 	
-	private final CommandXboxController joystick = new CommandXboxController(0);
+	private final CommandXboxController joystick1 = new CommandXboxController(0);
+	private final CommandXboxController joystick2 = new CommandXboxController(1);
+	private final CommandXboxController joystick3 = new CommandXboxController(2);
+
+	private final int frontLeftIndex = 0;
+	private final int frontRightIndex = 1;
+	private final int backLeftIndex = 2;
+	private final int backRightIndex = 3;
+
+	private final double deadband = 0.10;
+
 	
 	public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 	
@@ -53,27 +63,37 @@ public class RobotContainer {
 		drivetrain.setDefaultCommand(
 				// Drivetrain will execute this command periodically
 				drivetrain.applyRequest(() ->
-						drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-								.withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-								.withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+						drive.withVelocityX(-joystick1.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+								.withVelocityY(-joystick1.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+								.withRotationalRate(-joystick1.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
 				)
 		);
 		
-		joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-		joystick.b().whileTrue(drivetrain.applyRequest(() ->
-				point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+		joystick1.a().whileTrue(drivetrain.applyRequest(() -> brake));
+		joystick1.b().whileTrue(drivetrain.applyRequest(() ->
+				point.withModuleDirection(new Rotation2d(-joystick1.getLeftY(), -joystick1.getLeftX()))
 		));
 		
 		// Run SysId routines when holding back/start and X/Y.
 		// Note that each routine should be run exactly once in a single log.
-		joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-		joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-		joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-		joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+		joystick1.back().and(joystick1.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+		joystick1.back().and(joystick1.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+		joystick1.start().and(joystick1.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+		joystick1.start().and(joystick1.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 		
 		// reset the field-centric heading on left bumper press
-		joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-		
+		joystick1.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+		drivetrain.getModule(frontLeftIndex).getDriveMotor().set(joystick2.getLeftY() >= deadband || joystick2.getLeftY() <=  -deadband ? joystick2.getLeftY() : 0);
+		drivetrain.getModule(frontLeftIndex).getSteerMotor().set(joystick2.getLeftX() >= deadband || joystick2.getLeftX() <=  -deadband ? joystick2.getLeftX() : 0);	
+		drivetrain.getModule(backLeftIndex).getDriveMotor().set(joystick2.getRightY() >= deadband || joystick2.getRightY() <= -deadband ? joystick2.getRightY() : 0);	
+		drivetrain.getModule(backLeftIndex).getSteerMotor().set(joystick2.getRightX() >= deadband || joystick2.getRightX() <= -deadband ? joystick2.getRightX() : 0);
+
+		drivetrain.getModule(frontRightIndex).getDriveMotor().set(joystick3.getLeftY() >= deadband || joystick3.getLeftY() <=  -deadband ? joystick3.getLeftY() : 0);
+		drivetrain.getModule(frontRightIndex).getSteerMotor().set(joystick3.getLeftX() >= deadband || joystick3.getLeftX() <=  -deadband ? joystick3.getLeftX() : 0);
+		drivetrain.getModule(backRightIndex).getDriveMotor().set(joystick3.getRightY() >= deadband || joystick3.getRightY() <= -deadband ? joystick3.getRightY() : 0);
+		drivetrain.getModule(backRightIndex).getSteerMotor().set(joystick3.getRightX() >= deadband || joystick3.getRightX() <= -deadband ? joystick3.getRightX() : 0);
+
 		drivetrain.registerTelemetry(logger::telemeterize);
 	}
 	
