@@ -93,8 +93,30 @@ public class RobotContainer {
 		drivetrain.getModule(frontRightIndex).getSteerMotor().set(joystick3.getLeftX() >= deadband || joystick3.getLeftX() <=  -deadband ? joystick3.getLeftX() : 0);
 		drivetrain.getModule(backRightIndex).getDriveMotor().set(joystick3.getRightY() >= deadband || joystick3.getRightY() <= -deadband ? joystick3.getRightY() : 0);
 		drivetrain.getModule(backRightIndex).getSteerMotor().set(joystick3.getRightX() >= deadband || joystick3.getRightX() <= -deadband ? joystick3.getRightX() : 0);
+		// drivetrain.getModule(backRightIndex).getSteerMotor().set(applyScaledDeadband(joystick3.getRightX(), deadband));
 
 		drivetrain.registerTelemetry(logger::telemeterize);
+	}
+
+	// Example of overloaded method
+	private double applyScaledDeadband(double value, double deadband)
+	{
+			return applyScaledDeadband(value, deadband, false);
+	}
+
+	private double applyScaledDeadband(double value, double deadband, boolean isSquared)
+	{
+		// Short-circuit if value is within deadband
+		if (value <= deadband || value >= -deadband )
+		{
+			return 0;
+		}
+		// Positive or negative 1 dependant on the sign of the value passed in
+		double sign = value/value; 
+		// Scales result to have full range between 0 and 1 on both sides of the deadband
+		// Motor output = Function (e.g. y = x-0.10) * Scaler (the reciprocal of the function's max output to ensure it's always 1 (100%). e.g. if the max is 0.90, 0.90 * 1/0.90 = 1)
+		double result = (value-(sign*deadband))*(1/(1-deadband));
+		return isSquared ? Math.pow(result, 2) : result;
 	}
 	
 	public Command getAutonomousCommand() {
